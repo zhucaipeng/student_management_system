@@ -1,0 +1,12 @@
+# 核心服务（100%无编译依赖）
+fastapi>=0.100.0
+uvicorn>=0.20.0
+sqlalchemy>=2.0.0
+passlib>=1.7.4
+pycryptodome>=3.19.0
+python-multipart>=0.0.6
+pydantic>=2.0.0
+# JWT token处理
+python-jose[cryptography]>=3.3.0
+# 密码加密
+bcrypt>=4.0.0
