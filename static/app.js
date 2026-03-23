@@ -46,6 +46,20 @@ function changeInputMode(m) { currentMode = m; loadScoreSection(); }
 function onStudentSearch() { document.getElementById('studentList').innerHTML = buildStudentOptions(document.getElementById('studentSearch').value.toLowerCase()); }
 function showMessage(id, msg, type) { const el = document.getElementById(id); el.innerHTML = `<div class="message ${type}">${msg}</div>`; setTimeout(() => el.innerHTML = '', 3000); }
 
+function showConfirm(msg) {
+    return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        const box = document.createElement('div');
+        box.style.cssText = 'background:white;padding:20px 30px;border-radius:8px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.3);';
+        box.innerHTML = `<p style="margin:0 0 20px;font-size:16px;color:#333;">${msg}</p><button class="btn btn-primary" id="confirmYes" style="margin-right:10px;">确定</button><button class="btn btn-danger" id="confirmNo">取消</button>`;
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+        document.getElementById('confirmYes').onclick = () => { document.body.removeChild(overlay); resolve(true); };
+        document.getElementById('confirmNo').onclick = () => { document.body.removeChild(overlay); resolve(false); };
+    });
+}
+
 async function loadScoreSection() {
     await loadStudents(); await loadClasses();
     if (currentMode === 'single') {
@@ -193,7 +207,7 @@ async function editScore(id) {
 }
 
 async function deleteScore(id) {
-    if (!confirm('确定删除吗？')) return;
+    if (!await showConfirm('确定删除吗？')) return;
     const r = await apiCall(`/score/${id}`, 'DELETE');
     if (r && r.message) { showMessage('scoreMessage', '删除成功', 'success'); queryScores(); }
     else alert(r?.detail || '删除失败');
@@ -244,7 +258,7 @@ async function updateClass(id, n, t) {
 }
 
 async function deleteClass(id) {
-    if (!confirm('确定删除？')) return;
+    if (!await showConfirm('确定删除吗？')) return;
     const r = await apiCall(`/class/${id}`, 'DELETE');
     if (r && r.message) loadClassSection();
     else showMessage('classMessage', r?.detail || '删除失败', 'error');
@@ -308,7 +322,7 @@ async function updateStudent(id, d) {
 }
 
 async function deleteStudent(id) {
-    if (!confirm('确定删除？')) return;
+    if (!await showConfirm('确定删除吗？')) return;
     const r = await apiCall(`/student/${id}`, 'DELETE');
     if (r && r.message) loadStudentSection();
     else showMessage('studentMessage', r?.detail || '删除失败', 'error');
