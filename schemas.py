@@ -57,7 +57,7 @@ class StudentResponse(StudentBase):
 class ScoreBase(BaseModel):
     stu_id: int
     course_name: str = Field(..., min_length=1, max_length=20)
-    score: float = Field(..., ge=0, le=100)
+    score: float = Field(..., ge=0, le=150, description='分数范围0-150')
     exam_time: str  # 格式: YYYY-MM-DD
     exam_type: ExamType = ExamType.DAILY
 

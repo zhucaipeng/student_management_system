@@ -86,9 +86,10 @@ async function addSingleScore() {
     const cn = document.getElementById('courseName').value, et = document.getElementById('examType').value;
     const ed = document.getElementById('examDate').value, sv = parseFloat(document.getElementById('scoreValue').value);
     if (!cn || !ed || isNaN(sv)) { showMessage('scoreMessage', '请填写完整', 'error'); return; }
+    if (sv < 0 || sv > 150) { showMessage('scoreMessage', '分数必须在0-150之间', 'error'); return; }
     const r = await apiCall('/score/', 'POST', { stu_id: stuId, course_name: cn, score: sv, exam_time: ed, exam_type: et });
     if (r && r.id) { showMessage('scoreMessage', '添加成功', 'success'); loadScoreSection(); }
-    else showMessage('scoreMessage', r?.detail || '添加失败', 'error');
+    else { const errMsg = r?.detail || '添加失败'; showMessage('scoreMessage', errMsg, 'error'); }
 }
 
 async function generateBatchList() {
@@ -120,7 +121,19 @@ async function submitBatchScores() {
     const ed = document.getElementById('batchExamDate').value;
     const inputs = document.querySelectorAll('.score-input');
     const data = [];
-    inputs.forEach(i => { const v = i.value.trim(); if (v) { const n = parseFloat(v); if (!isNaN(n) && n >= 0 && n <= 150) data.push({ stu_id: parseInt(i.dataset.stuId), course_name: cn, score: n, exam_time: ed, exam_type: et }); } });
+    let hasInvalidScore = false;
+    inputs.forEach(i => { 
+        const v = i.value.trim(); 
+        if (v) { 
+            const n = parseFloat(v); 
+            if (isNaN(n) || n < 0 || n > 150) {
+                hasInvalidScore = true;
+            } else {
+                data.push({ stu_id: parseInt(i.dataset.stuId), course_name: cn, score: n, exam_time: ed, exam_type: et });
+            }
+        }
+    });
+    if (hasInvalidScore) { showMessage('scoreMessage', '分数必须在0-150之间', 'error'); return; }
     if (!data.length) { showMessage('scoreMessage', '请填写分数', 'error'); return; }
     const r = await apiCall('/score/batch', 'POST', data);
     if (r && Array.isArray(r)) { showMessage('scoreMessage', `成功提交 ${r.length} 条`, 'success'); setTimeout(() => loadScoreSection(), 1500); }
